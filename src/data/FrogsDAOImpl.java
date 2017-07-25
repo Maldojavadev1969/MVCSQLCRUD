@@ -21,7 +21,8 @@ import javax.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
 
-//import com.skilldistillery.film.data.Film;
+import com.mysql.jdbc.Statement;
+
 
 public class FrogsDAOImpl implements FrogDAO {
 	private static final String FILE_NAME ="/WEB-INF/frogs.csv";
@@ -70,10 +71,75 @@ public class FrogsDAOImpl implements FrogDAO {
 			}
 			return frog;
 		}
+		
+		 // **********************  add a frog from the database
+	public void addFrogToDb(Frog frog) {
+		Connection conn = null;
+		try {
+			conn = DriverManager.getConnection(url, user, pass);
+			conn.setAutoCommit(false); // START TRANSACTION
+			String sql = "Insert Into Frog(name, lifespan, region) values(?, ?, ?)";
+			PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			stmt.setString(1, frog.getName());
+			stmt.setString(2, frog.getlifespanYears());
+			stmt.setString(3, frog.getRegion());
+		
+			int updateCount = stmt.executeUpdate();
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()) {
+				frog.setId(rs.getInt(1));
+			}
+			
+
+			conn.commit(); // COMMIT TRANSACTION
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (conn != null) {
+				try {
+					conn.rollback();
+				} catch (SQLException sqle2) {
+					System.err.println("Error trying to rollback");
+				}
+			}
+			throw new RuntimeException("Error inserting frog " + frog);
+		}
+	}
+	
+	//********************* delete a frog from the database
+	
+//	public void deleteFrogFromDb(Frog frog) {
+//		Connection conn = null;
+//		try {
+//			conn = DriverManager.getConnection(url, user, pass);
+//			conn.setAutoCommit(false); // START TRANSACTION
+//			String sql ="Delete From Frog WHERE id = ?";
+//			PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+//			stmt.setInt(1, frog.getId());
+//		
+//			int updateCount = stmt.executeUpdate();
+//			ResultSet rs = stmt.getGeneratedKeys();
+//			if (rs.next()) {
+//				frog.setId(rs.getInt(1));
+//			}
+//			
+//
+//			conn.commit(); // COMMIT TRANSACTION
+//		} catch (SQLException sqle) {
+//			sqle.printStackTrace();
+//			if (conn != null) {
+//				try {
+//					conn.rollback();
+//				} catch (SQLException sqle2) {
+//					System.err.println("Error trying to rollback");
+//				}
+//			}
+//			throw new RuntimeException("Error deleting frog " + frog);
+//		}
+//	}
 	
 		
 	
-	//************ testing area to get frogs from database ************************
+	//************ end of testing area to get frogs from database ************************
 		
 	@Autowired 
 	private WebApplicationContext wac;

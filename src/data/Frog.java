@@ -4,10 +4,19 @@ public class Frog {
 	private String name;
 	private String lifespanYears;
 	private String region;
+	private int id;
 
 	public Frog() {
 	}
 	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	// Frog constructor for initializing fields
 	public Frog(String name, String lifespanYears, String region) {
 		super();

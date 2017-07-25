@@ -9,4 +9,7 @@ public interface FrogDAO {
 	public void updateFrog(Frog frog);
 	public List<Frog> getAllFrogs();
 	public Frog getFrogById(int id);
+	public void addFrogToDb(Frog frog);
+	//public void deleteFrogFromDb(int id);
+	
 }

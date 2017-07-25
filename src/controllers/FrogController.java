@@ -35,6 +35,16 @@ public class FrogController {
 	  mv.addObject("frog", frog);
 	  return mv;
 	}
+	
+	@RequestMapping(path="addFrogToDb.do",
+			method=RequestMethod.POST)
+	public ModelAndView addFrogToDb(Frog frog) {
+	  frogDao.addFrogToDb(frog);
+		ModelAndView mv = new ModelAndView();
+		mv.setViewName("result1.jsp");
+		return mv;
+	}
+	
 	//**************************************************************
 	
 	
