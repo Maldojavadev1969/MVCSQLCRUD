@@ -1,11 +1,17 @@
 package data;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
+
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +20,8 @@ import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.WebApplicationContext;
+
+//import com.skilldistillery.film.data.Film;
 
 public class FrogsDAOImpl implements FrogDAO {
 	private static final String FILE_NAME ="/WEB-INF/frogs.csv";
@@ -25,6 +33,48 @@ public class FrogsDAOImpl implements FrogDAO {
 	 * retrieve an ServletContext so we can read from a 
 	 * file.
 	 */
+	
+	//********* get data from frog database ************************************
+	private static String url = "jdbc:mysql://localhost:3306/Frogs";
+	private String user = "froguser";
+	private String pass = "froguser";
+	
+	public FrogsDAOImpl() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("Error loading MySQL Driver!!!");
+		}
+	}
+		
+		//working with a command object and want to return a frog
+		// to display on the result1.jsp
+		public Frog getFrogById(int id) {
+			Frog frog = null;
+			try {
+				Connection conn = DriverManager.getConnection(url, user, pass);
+				String sql = "SELECT id, name, lifespan, region FROM frog WHERE id = ?";
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				stmt.setInt(1, id);
+				ResultSet rs = stmt.executeQuery();
+				if (rs.next()) {
+					// get film columns from DB result set and load into Frog object constructor
+					frog = new Frog(rs.getString(1), rs.getString(2), rs.getString(3));
+				}
+				rs.close();
+				stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return frog;
+		}
+	
+		
+	
+	//************ testing area to get frogs from database ************************
+		
 	@Autowired 
 	private WebApplicationContext wac;
 
@@ -52,76 +102,43 @@ public class FrogsDAOImpl implements FrogDAO {
 			System.err.println(e);
 		}
 	}
-	
-	//***************   TEST AREA   ********************************
-	//ObjectOutputStream is = wac.getServletContext().getResourceAsStream(FILE_NAME);
-	//BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-	
+
 	// the idea is to write a new file over the existing file
 	// by updating, deleting or adding a frog to the array and then rewrite the file!
 
-	 
-	
 	@Autowired
     ServletContext context;
 	@Override
   
 	    public void addFrog(Frog frog) {
 			
+		// this will add a frog to the List
 			frogs.add(frog);
-			
-			///MVCFileCRUD/WebContent/WEB-INF/frogs.csv
+		// add a frog to the apache tomcat server csv file.. 
+		// will not see changes on the local csv file !!!!!!!
 			String path = "/WEB-INF/frogs.csv";
-			String filePath = context.getRealPath(path);
-			//****************************************
-			
-			
-//			public void createStudentFile() {
-//		        String filePath = wac.getServletContext().getRealPath(FILE_NAME);
-//		        System.out.println(filePath);
-//		        System.out.println("DAO: " + filePath);
-//
-//		        try {
-//		            PrintWriter out = new PrintWriter(new FileWriter(filePath));
-//		            for (Student s : studentList) {
-//		                out.println(s.getFirstName() + "," + s.getLastName() + "," + s.getOtherInformation());
-//
-//		            }
-//		            out.close();
-//		        } catch (IOException ioe) {
-//		            ioe.printStackTrace();
-//		        }
-			
-			//*************************************
-			
-			
-			
-			
-			
-			
+			String filePath = wac.getServletContext().getRealPath(path);
+			System.out.println(filePath);
+
 	        try {
-	        	
+	     	
 	            PrintWriter pw = new PrintWriter(new FileWriter(filePath), false);
 	            {
-	            	for (Frog frog2 : frogs) {
-	            		  pw.println("4," + frog2.getName() + "," + frog2. + "," + frogs.get(index).getRegion());
-	  	                //pw.println(frog.getName());
-					}
+	            		int i = 0;
+	            		pw.println("id,name,lifespanYears,region");
+	            		
+	            		for (Frog frog1 : frogs) {
+	            		  pw.println(i + "," + frog1.getName() + "," + frog1.getlifespanYears() + "," + frog1.getRegion());
+	            		  i++;
+	            		}
 	            }
-//	               pw.println("4," + index.getName() + "," + frogs.get(index).getlifespanYears() + "," + frogs.get(index).getRegion());
-//	                //pw.println(frog.getName());
-//	               
-//	            }		
-	           //pw.flush();
+
 	           pw.close();
 	        }
-	        catch (Exception e) {
-			System.err.println(e);
-	        }
+	        catch (IOException ioe) {
+	        	ioe.printStackTrace();	        
+	        	}
 	    }
-	    
-
-	//**************       END OF TEST AREA   **********************************
 
 	// Read operation of instance of Frog from data that has 
 	// been retrieved from csv file!
@@ -131,6 +148,8 @@ public class FrogsDAOImpl implements FrogDAO {
 		for (Frog frog : frogs) {
 			if (frog.getName().equalsIgnoreCase(name)) {
 				f = frog;
+				//remove frog if delete is clicked
+				//if(delete is clicked)
 				break;
 			}
 		}
@@ -143,5 +162,101 @@ public class FrogsDAOImpl implements FrogDAO {
 		// states is a list and now want to return the list
 		return frogs;
 	}
+	
+	@Autowired
+    ServletContext context2;
+	
+	@Override
+	public void deleteFrog(String name ) {
+			
+			
+			String path = "/WEB-INF/frogs.csv";
+			String filePath = wac.getServletContext().getRealPath(path);
+			System.out.println(filePath);
+
+	        try {
+	        	
+	        	//have  user input frog to be removed!
+	        //change this to a regular for loop
+	        	
+	        	
+	        	for (Frog frog : frogs) {
+	    			if (frog.getName().equalsIgnoreCase(name)) {
+	    				//remove frog from Array list
+	    	        	frogs.remove(frog);
+	    	        	//frog.get
+	    				break;
+	    			}
+	    		}
+	        	
+	        	//now print out new csv file with frog removed
+	            PrintWriter pw = new PrintWriter(new FileWriter(filePath), false);
+	            {
+	            	int i = 0;
+            		
+	            	pw.println("id,name,lifespanYears,region");
+            		for (Frog frog1 : frogs) {
+            		  pw.println(i + "," + frog1.getName() + "," + frog1.getlifespanYears() + "," + frog1.getRegion());
+            		  i++;
+            		}
+	            }
+
+	           pw.close();
+	        }
+	        catch (IOException ioe) {
+	        	ioe.printStackTrace();	        
+	        	}
+	    }
+	
+	@Autowired
+    ServletContext context3;
+	@Override
+  
+	    public void updateFrog(Frog frog) {
+		
+		// list.set(N, obj) --- assigns object to position n in arrray
+		
+		 String fr = frog.getName();
+		 System.out.println(fr);
+		 
+		 for (int i = 0; i < frogs.size(); i++) {
+			 //frog myFrog = new frog();
+				if (frogs.get(i).getName().equalsIgnoreCase(fr)) {
+					frogs.set(i, frog);
+
+					break;
+				}
+		 }
+		
+		//*****************************************************
+		// add a frog to the apache tomcat server csv file.. 
+		// will not see changes on the local csv file !!!!!!!
+			String path = "/WEB-INF/frogs.csv";
+			String filePath = wac.getServletContext().getRealPath(path);
+			System.out.println(filePath);
+			
+	        try {
+	     	
+	            PrintWriter pw = new PrintWriter(new FileWriter(filePath), false);
+	            {
+	            
+	            	int i = 0;
+	            	pw.println("id,name,lifespanYears,region");
+            		
+            		for (Frog frog1 : frogs) {
+            		  pw.println(i + "," + frog1.getName() + "," + frog1.getlifespanYears() + "," + frog1.getRegion());
+            		  i++;
+            		  }
+	            }
+
+	           pw.close();
+	        }
+	        catch (IOException ioe) {
+	        	ioe.printStackTrace();	        
+	        	}
+	    }
+	
+	
+
 }
 

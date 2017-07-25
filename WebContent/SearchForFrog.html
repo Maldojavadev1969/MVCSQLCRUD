@@ -2,11 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="searchfrog.css"/>
     <title>Search for frog by name</title>
   </head>
   <body>
+   <h2>Search for frog by name</h2>
     <form action="route.do" method="GET">
-      <input type="text" name="data" /><br />
+      <input type="text" name="data" /> 	<br />
+      <input type="submit" value="Submit" /><br />
+    </form>
+    <h2>Search for frog by id</h2>
+    <form action="searchId.do" method="GET">
+      <input type="text" name="frogId" /> 	<br />
       <input type="submit" value="Submit" /><br />
     </form>
   </body>

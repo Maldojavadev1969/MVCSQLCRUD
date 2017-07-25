@@ -1,0 +1,15 @@
+@Charset "UTF-8";
+
+
+
+body {
+    background-image: url("http://01.gatag.net/img/201508/13s/gatag-00014255.jpg");
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-position: center;
+    background-size: cover;
+}
+
+h2 {
+color: #00ff00;
+}

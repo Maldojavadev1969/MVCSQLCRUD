@@ -9,12 +9,13 @@ public class Frog {
 	}
 	
 	// Frog constructor for initializing fields
-	public Frog(String name, String lifespanYears, String region ) {
+	public Frog(String name, String lifespanYears, String region) {
+		super();
 		this.name = name;
 		this.lifespanYears = lifespanYears;
 		this.region = region;
+		
 	}
-
 
 	public String getName() {
 		return name;
@@ -43,9 +44,6 @@ public class Frog {
 		return "Frog [name=" + name + ", lifespanYears=" + lifespanYears + ", region=" + region + "]";
 	}
 
-//	@Override
-//	public String toString() {
-//		return "State [abbreviation=" + abbrev + ", name=" + name + ", capital=" + capital + "]";
-//	}
+
 
 }
